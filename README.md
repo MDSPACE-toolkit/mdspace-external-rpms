@@ -41,6 +41,7 @@ If you need to build the RPM packages from source, use the following steps:
 2. Build the RPMs from the `spec` files:
 
    ```bash
+   spectool -g -R <package_name>/<package_name>.spec
    rpmbuild -ba <package_name>/<package_name>.spec
    ```
 
