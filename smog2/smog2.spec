@@ -2,7 +2,7 @@
 
 Name:           smog2
 Version:        2.5
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        SMOG2 - A tool for molecular simulation
 
 License:        GPLv2
@@ -19,9 +19,11 @@ BuildRequires:  perl-generators
 BuildRequires:  perl-devel
 BuildRequires:  zlib-devel
 
+Requires:       epel-release
 Requires:       perl
 Requires:       perl(XML::Parser)
 Requires:       perl(XML::SAX)
+Requires:       java-21-open-jdk
 
 %description
 SMOG2 (Structure and Mechanics of Geometries) is a tool for molecular 

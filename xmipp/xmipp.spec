@@ -1,15 +1,15 @@
 %global debug_package %{nil}
 Name:           xmipp
 Version:        3.25.06.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        XMIPP - Image Processing Software for CryoEM
 
 License:        GPL
 URL:            https://xmipp.cnb.csic.es/
 Source0:        https://github.com/I2PC/xmipp/archive/refs/tags/v3.25.06.0-Rhea.tar.gz
 
-BuildRequires:  gcc-c++, make, cmake, perl, fftw3-devel, libtiff-devel, mpi-devel
-Requires:       fftw3, libtiff, mpi
+BuildRequires:  gcc-c++, make, cmake, perl, fftw3-devel, libtiff-devel, mpi-devel, nvidia-driver
+Requires:       fftw3, libtiff, mpi, nvidia-driver
 Provides: libmpi.so.40()(64bit), libsvm.so()(64bit), libcuFFTAdvisor.so()(64bit), libmpi_cxx.so.40()(64bit)
 
 %description
