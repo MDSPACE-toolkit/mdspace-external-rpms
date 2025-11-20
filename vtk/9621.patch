@@ -1,0 +1,36 @@
+From 72119ea71422d2892f2a0475fc282835310f8d9e Mon Sep 17 00:00:00 2001
+From: Cory Quammen <cory.quammen@kitware.com>
+Date: Thu, 29 Sep 2022 13:10:00 -0400
+Subject: [PATCH] vtkXMLTreeReader: protect against possible nullptr
+ dereference
+
+Vulnerability reported at
+https://nvd.nist.gov/vuln/detail/CVE-2021-42521.
+
+Fixes #17818
+
+(cherry picked from commit 9a2fe8ef2ecbf04f811b2e02b71eae8b94aae089)
+---
+ IO/Infovis/vtkXMLTreeReader.cxx | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/IO/Infovis/vtkXMLTreeReader.cxx b/IO/Infovis/vtkXMLTreeReader.cxx
+index 64abca37e96..af64572b27f 100644
+--- a/IO/Infovis/vtkXMLTreeReader.cxx
++++ b/IO/Infovis/vtkXMLTreeReader.cxx
+@@ -217,6 +217,12 @@ int vtkXMLTreeReader::RequestData(
+ 
+   // Get the root element node
+   xmlNode* rootElement = xmlDocGetRootElement(doc);
++  if (!rootElement)
++  {
++    vtkErrorMacro(<< "Could not get root element of document.");
++    return 0;
++  }
++
+   vtkXMLTreeReaderProcessElement(builder, -1, rootElement, this->ReadCharData, this->MaskArrays);
+ 
+   xmlFreeDoc(doc);
+-- 
+GitLab
+
