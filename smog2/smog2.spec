@@ -23,7 +23,7 @@ Requires:       epel-release
 Requires:       perl
 Requires:       perl(XML::Parser)
 Requires:       perl(XML::SAX)
-Requires:       java-21-open-jdk
+Requires:       java-21-openjdk
 
 %description
 SMOG2 (Structure and Mechanics of Geometries) is a tool for molecular 

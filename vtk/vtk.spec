@@ -484,8 +484,8 @@ programming languages.
 
 %prep
 PATCH_DIR=%{SOURCE0}/patches
-cp $PATCH_DIR/*.patch %{_sourcedir}/
-cp $PATCH_DIR/xorg.conf %{_sourcedir}/
+#cp ./*.patch %{_sourcedir}/
+#cp ./xorg.conf %{_sourcedir}/
 %autosetup -p1 -b 1 -n VTK-%{version}
 # Remove included thirdparty sources just to be sure
 # TODO - diy2 - not yet packaged
