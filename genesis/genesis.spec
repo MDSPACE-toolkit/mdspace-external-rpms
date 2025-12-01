@@ -1,11 +1,11 @@
 %global debug_package %{nil}
 Name:           genesis
-Version:        1.4.0
-Release:        1%{?dist}
+Version:        2.1.6
+Release:        0%{?dist}
 Summary:        GENESIS molecular dynamics simulation engine
 
 License:        GPLv2
-URL:            https://github.com/MDSPACE-toolkit/MDTools
+URL:            https://github.com/MDSPACE-toolkit/mdspace-genesis
 Source0:        %{url}/archive/refs/tags/%{version}.tar.gz
 
 BuildRequires:  gcc
@@ -30,13 +30,11 @@ dynamics simulation package designed for biomolecular systems. This build is
 compatible with MDSPACE and includes the required Fortran configuration flags.
 
 %prep
-%autosetup -n MDTools-%{version}
+%autosetup -n mdspace-genesis-%{version}
 
 %build
 autoreconf -fi
-./configure \
-    --prefix=%{_prefix} \
-    FFLAGS="-fallow-argument-mismatch -ffree-line-length-none"
+./configure --prefix=/usr
 make
 
 %install
@@ -46,5 +44,7 @@ make install DESTDIR=%{buildroot}
 %{_bindir}/*
 
 %changelog
+* Mon Dec 01 2025 Benjamin Gallois <benjamin.gallois@sorbonne-universite.fr> - 2.6.0-0
+- Update to GENESIS 2.1.6
 * Sat Nov 01 2025 Benjamin Gallois <benjamin.gallois@sorbonne-universite.fr> - 1.4.0-1
 - Initial GENESIS build for MDSPACE integration
