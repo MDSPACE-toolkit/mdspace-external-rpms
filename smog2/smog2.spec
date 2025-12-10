@@ -2,7 +2,7 @@
 
 Name:           smog2
 Version:        2.5
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        SMOG2 - A tool for molecular simulation
 
 License:        GPLv2
@@ -66,6 +66,14 @@ SMOG_PATH="$SMOG_PATH" exec /usr/bin/perl "$SMOG_PATH/smogv2" "$@"
 EOF
 
 chmod 755 bin/smog2
+
+# Replace broken absolute symlinks with real directories
+for link in SBM_AA SBM_AA+gaussian SBM_calpha SBM_calpha+gaussian; do
+    if [ -L "$link" ]; then
+        rm -f "$link"
+        cp -a "share/templates/$link" "$link"
+    fi
+done
 
 %install
 mkdir -p %{buildroot}%{_bindir}
