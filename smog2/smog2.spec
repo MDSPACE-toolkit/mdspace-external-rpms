@@ -2,7 +2,7 @@
 
 Name:           smog2
 Version:        2.5
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        SMOG2 - A tool for molecular simulation
 
 License:        GPLv2
@@ -67,6 +67,19 @@ EOF
 
 chmod 755 bin/smog2
 
+cat > bin/smog_adjustPDB <<'EOF'
+#!/bin/bash
+
+SMOG_PATH="/usr/share/smog2"
+export PERLLIB="$SMOG_PATH:$PERL5LIB"
+export PERL5LIB="$SMOG_PATH:$PERL5LIB"
+
+export perl4smog=/usr/bin/perl
+SMOG_PATH="$SMOG_PATH" exec /usr/bin/perl "$SMOG_PATH/src/tools/adjustPDB" "$@"
+EOF
+
+chmod 755 bin/smog_adjustPDB
+
 # Replace broken absolute symlinks with real directories
 for link in SBM_AA SBM_AA+gaussian SBM_calpha SBM_calpha+gaussian; do
     if [ -L "$link" ]; then
@@ -78,6 +91,7 @@ done
 %install
 mkdir -p %{buildroot}%{_bindir}
 install -m 0755 bin/smog2 %{buildroot}%{_bindir}/
+install -m 0755 bin/smog_adjustPDB %{buildroot}%{_bindir}/
 
 mkdir -p %{buildroot}/usr/share/smog2
 install -m 0644 src/*.pm %{buildroot}/usr/share/smog2/
@@ -103,6 +117,7 @@ rm -f %{buildroot}/usr/lib64/perl5/vendor_perl/auto/Tree/DAG_Node/.packlist
 
 %files
 %{_bindir}/smog2
+%{_bindir}/smog_adjustPDB
 /usr/share/smog2
 /usr/share/perl5/vendor_perl
 /usr/share/man/man3/*.3pm.gz
