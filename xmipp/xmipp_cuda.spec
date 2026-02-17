@@ -1,6 +1,6 @@
 %global debug_package %{nil}
 
-Name:           xmipp
+Name:           xmipp-cuda
 Version:        3.25.06.0
 Release:        3%{?dist}
 Summary:        XMIPP - Image Processing Software for CryoEM
@@ -15,13 +15,18 @@ BuildRequires:  cmake
 BuildRequires:  perl
 BuildRequires:  fftw3-devel
 BuildRequires:  libtiff-devel
-Provides: libsvm.so()(64bit)
+BuildRequires: cuda-toolkit-11-7
+BuildRequires: cuda-cudart-devel-11-7
+BuildRequires: libcufft-devel-11-7
 
 Requires:       fftw3
 Requires:       libtiff
+Requires:       nvidia-driver
 
-Conflicts: xmipp-cuda
+Provides: libsvm.so()(64bit) libcuFFTAdvisor.so()(64bit)
+
 Conflicts: xmipp-mpi
+Conflicts: xmipp
 
 %description
 XMIPP is a software suite designed for image processing in cryo-electron microscopy (cryo-EM).
@@ -35,13 +40,20 @@ It includes a range of tools for working with cryo-EM images and maps.
 
 mkdir -p build
 pushd build
+%global cuda_root /usr/local/cuda-11.7
+export CUDA_HOME=/usr/local/cuda-11.7
+export PATH=$CUDA_HOME/bin:$PATH
+export CPATH=$CUDA_HOME/include${CPATH:+:$CPATH}
+export LIBRARY_PATH=$CUDA_HOME/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 cmake .. \
   -DCMAKE_INSTALL_PREFIX=%{_prefix} \
   -DCMAKE_BUILD_TYPE=Release \
   -DXMIPP_LINK_TO_SCIPION=NO \
-  -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
-  -DXMIPP_USE_MPI=OFF
+  -DXMIPP_USE_MPI=OFF \
+  -DXMIPP_USE_CUDA=ON \
+  -DCMAKE_CUDA_ARCHITECTURES=86
 make -j$(nproc)
 popd
 

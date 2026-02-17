@@ -1,6 +1,6 @@
 %global debug_package %{nil}
 
-Name:           xmipp
+Name:           xmipp-mpi
 Version:        3.25.06.0
 Release:        3%{?dist}
 Summary:        XMIPP - Image Processing Software for CryoEM
@@ -9,19 +9,24 @@ License:        GPL
 URL:            https://xmipp.cnb.csic.es/
 Source0:        https://github.com/I2PC/xmipp/archive/refs/tags/v%{version}-Rhea.tar.gz
 
+%bcond_without  mpi
+%bcond_without  cuda
+
 BuildRequires:  gcc-c++
 BuildRequires:  make
 BuildRequires:  cmake
 BuildRequires:  perl
 BuildRequires:  fftw3-devel
 BuildRequires:  libtiff-devel
-Provides: libsvm.so()(64bit)
+BuildRequires:  mpi-devel
+
+Provides: libmpi.so.40()(64bit), libsvm.so()(64bit), libmpi_cxx.so.40()(64bit)
 
 Requires:       fftw3
 Requires:       libtiff
 
 Conflicts: xmipp-cuda
-Conflicts: xmipp-mpi
+Conflicts: xmipp
 
 %description
 XMIPP is a software suite designed for image processing in cryo-electron microscopy (cryo-EM).
@@ -41,7 +46,7 @@ cmake .. \
   -DXMIPP_LINK_TO_SCIPION=NO \
   -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
-  -DXMIPP_USE_MPI=OFF
+  -DXMIPP_USE_MPI=ON
 make -j$(nproc)
 popd
 
