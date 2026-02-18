@@ -1,6 +1,6 @@
 %global debug_package %{nil}
 Name:           genesis
-Version:        2.1.6.1
+Version:        2.1.6.2
 Release:        0%{?dist}
 Summary:        GENESIS molecular dynamics simulation engine
 
