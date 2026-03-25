@@ -17,16 +17,6 @@
 %endif
 %bcond_without mpich
 %bcond_without openmpi
-# s390x on EL8 does not have xorg-x11-drv-dummy
-%if 0%{?rhel}
-%ifarch s390x
-%bcond_with    xdummy
-%else
-%bcond_without xdummy
-%endif
-%else
-%bcond_without xdummy
-%endif
 
 %if 0%{?fedora} >= 33 || 0%{?rhel} >= 9
 %bcond_without flexiblas
@@ -40,27 +30,14 @@
 
 Summary: The Visualization Toolkit - A high level 3D visualization library
 Name: vtk
-Version: 9.1.0
+Version: 9.6.0
 Release: 19%{?dist}
 # This is a variant BSD license, a cross between BSD and ZLIB.
 # For all intents, it has the same rights and restrictions as BSD.
 # http://fedoraproject.org/wiki/Licensing/BSD#VTKBSDVariant
 License: BSD
-Source0: https://www.vtk.org/files/release/9.1/VTK-%{version}.tar.gz
-Source1: https://www.vtk.org/files/release/9.1/VTKData-%{version}.tar.gz
-Source2: xorg.conf
-# Patch required libharu version (Fedora 33+ contains the needed VTK patches)
-Patch0: vtk-libharu.patch
-# Upstream patch to link kissfft with libm
-Patch1: vtk-kissfft-libm.patch
-# Upstream patch to support netcdf 4.9.0
-# https://gitlab.kitware.com/vtk/vtk/-/issues/18576
-Patch2: vtk-netcdf.patch
-# Duplicate define conflict with Xutil, see:
-# https://gitlab.kitware.com/vtk/vtk/-/issues/18048
-Patch3: vtk-AllValues.patch
-# CVE-2021-42521 - vtkXMLTreeReader: possible nullptr dereference
-Patch4: https://gitlab.kitware.com/vtk/vtk/-/merge_requests/9621.patch
+Source0: https://www.vtk.org/files/release/9.6/VTK-%{version}.tar.gz
+Source1: https://www.vtk.org/files/release/9.6/VTKData-%{version}.tar.gz
 
 URL: https://vtk.org/
 
@@ -100,8 +77,6 @@ BuildRequires:  hdf5-devel
 BuildRequires:  jsoncpp-devel
 BuildRequires:  libarchive-devel
 BuildRequires:  libGL-devel
-# Requires special patched version of libharu
-BuildRequires:  libharu-devel >= 2.3.0-9
 BuildRequires:  libICE-devel
 BuildRequires:  libjpeg-devel
 BuildRequires:  libpng-devel
@@ -133,7 +108,6 @@ BuildRequires:  zlib-devel
 BuildRequires:  chrpath
 BuildRequires:  doxygen
 BuildRequires:  graphviz
-BuildRequires:  gnuplot
 BuildRequires:  wget
 %if %{with mpich}
 BuildRequires:  mpich-devel
@@ -144,11 +118,6 @@ BuildRequires:  netcdf-mpich-devel
 BuildRequires:  openmpi-devel
 BuildRequires:  python%{?python3_pkgversion}-mpi4py-openmpi
 BuildRequires:  netcdf-openmpi-devel
-%endif
-# For %check
-%if %{with xdummy}
-BuildRequires:  xorg-x11-drv-dummy
-BuildRequires:  mesa-dri-drivers
 %endif
 Requires: hdf5 = %{_hdf5_version}
 
@@ -183,7 +152,6 @@ Requires: jsoncpp-devel%{?_isa} \
 Requires: lapack-devel%{?_isa} \
 Requires: libarchive-devel%{?_isa} \
 Requires: libGL-devel%{?_isa} \
-Requires: libharu-devel%{?_isa} >= 2.3.0-9 \
 Requires: libjpeg-devel%{?_isa} \
 Requires: libogg-devel%{?_isa} \
 Requires: libpng-devel%{?_isa} \
@@ -483,21 +451,7 @@ programming languages.
 
 
 %prep
-PATCH_DIR=%{SOURCE0}/patches
-#cp ./*.patch %{_sourcedir}/
-#cp ./xorg.conf %{_sourcedir}/
 %autosetup -p1 -b 1 -n VTK-%{version}
-# Remove included thirdparty sources just to be sure
-# TODO - diy2 - not yet packaged
-# TODO - exodusII - not yet packaged
-# TODO - verdict - not yet packaged
-# TODO - VPIC - not yet packaged
-# TODO - xdmf2 - not yet packaged
-# TODO - xdmf3 - not yet packaged
-for x in vtk{cli11,doubleconversion,eigen,expat,%{?with_fmt:fmt,}freetype,%{?with_gl2ps:gl2ps,}glew,hdf5,jpeg,jsoncpp,libharu,libproj,libxml2,lz4,lzma,mpi4py,netcdf,ogg,pegtl,png,pugixml,sqlite,theora,tiff,utf8,zfp,zlib}
-do
-  rm -r ThirdParty/*/${x}
-done
 
 # Remove unused KWSys items
 find Utilities/KWSys/vtksys/ -name \*.[ch]\* | grep -vE '^Utilities/KWSys/vtksys/([a-z].*|Configure|SharedForward|Status|String\.hxx|Base64|CommandLineArguments|Directory|DynamicLoader|Encoding|FStream|FundamentalType|Glob|MD5|Process|RegularExpression|System|SystemInformation|SystemTools)(C|CXX|UNIX)?\.' | xargs rm
@@ -561,7 +515,7 @@ export JAVA_TOOL_OPTIONS=-Xmx2048m
  -DVTK_WRAP_JAVA:BOOL=OFF \\\
 %endif \
  -DVTK_WRAP_PYTHON:BOOL=ON \\\
- -DVTK_USE_EXTERNAL=ON \\\
+ -DVTK_USE_EXTERNAL=OFF \\\
 %if !%{with fmt} \
  -DVTK_MODULE_USE_EXTERNAL_VTK_fmt:BOOL=OFF \\\
 %endif \
@@ -705,26 +659,6 @@ rm -rf %{buildroot}%{_datadir}/vtkdata/Wrapping
 export QA_RPATHS=18
 
 
-%check
-cp %SOURCE2 .
-%if %{with xdummy}
-if [ -x /usr/libexec/Xorg ]; then
-   Xorg=/usr/libexec/Xorg
-else
-   Xorg=/usr/libexec/Xorg.bin
-fi
-$Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile ./xorg.log -config ./xorg.conf -configdir . :99 &
-export DISPLAY=:99
-%endif
-%global _vpath_builddir build
-export FLEXIBLAS=netlib
-%ctest --verbose || :
-%if %{with xdummy}
-kill %1 || :
-cat xorg.log
-%endif
-
-
 %files -f build/libs.list
 %license %{_defaultlicensedir}/%{name}/
 %doc README.md _docs/Wrapping
@@ -735,12 +669,17 @@ cat xorg.log
 %{_bindir}/vtkProbeOpenGLVersion
 %{_bindir}/vtkWrapHierarchy
 %{_bindir}/vtkWrapJava
+%{_bindir}/vtkWrapJavaScript
+%{_bindir}/vtkWrapSerDes
 %{_includedir}/%{name}
 %{_libdir}/*.so
 %{_libdir}/cmake/%{name}/
 %dir %{_libdir}/%{name}
 %{_libdir}/%{name}/hierarchy/
 %{_docdir}/%{name}/
+%dir %{_datadir}/vtk
+%dir %{_datadir}/vtk/proj
+%{_datadir}/vtk/proj/*
 
 %files -n python%{python3_pkgversion}-vtk
 %{python3_sitearch}/*
@@ -771,11 +710,16 @@ cat xorg.log
 %{_libdir}/mpich/bin/vtkProbeOpenGLVersion
 %{_libdir}/mpich/bin/vtkWrapHierarchy
 %{_libdir}/mpich/bin/vtkWrapJava
+%{_libdir}/mpich/bin/vtkWrapJavaScript
+%{_libdir}/mpich/bin/vtkWrapSerDes
 %{_libdir}/mpich/include/
 %{_libdir}/mpich/lib/*.so
 %{_libdir}/mpich/lib/cmake/
 %dir %{_libdir}/mpich/lib/%{name}
 %{_libdir}/mpich/lib/%{name}/hierarchy/
+%dir %{_libdir}/mpich/share/vtk
+%dir %{_libdir}/mpich/share/vtk/proj
+%{_libdir}/mpich/share/vtk/proj/*
 
 %files -n python%{python3_pkgversion}-vtk-mpich
 %{_libdir}/mpich/lib/python%{python3_version}/
@@ -797,8 +741,6 @@ cat xorg.log
 %{_libdir}/mpich/lib/lib*Qt*.so.*
 %exclude %{_libdir}/mpich/lib/*Python*.so.*
 %{_libdir}/mpich/lib/qt6/
-%{_libdir}/mpich/lib/qml/
-%{_libdir}/qml/
 %endif
 
 %if %{with openmpi}
@@ -811,11 +753,16 @@ cat xorg.log
 %{_libdir}/openmpi/bin/vtkProbeOpenGLVersion
 %{_libdir}/openmpi/bin/vtkWrapHierarchy
 %{_libdir}/openmpi/bin/vtkWrapJava
+%{_libdir}/openmpi/bin/vtkWrapJavaScript
+%{_libdir}/openmpi/bin/vtkWrapSerDes
 %{_libdir}/openmpi/include/
 %{_libdir}/openmpi/lib/*.so
 %{_libdir}/openmpi/lib/cmake/
 %dir %{_libdir}/openmpi/lib/%{name}
 %{_libdir}/openmpi/lib/%{name}/hierarchy/
+%dir %{_libdir}/openmpi/share/vtk
+%dir %{_libdir}/openmpi/share/vtk/proj
+%{_libdir}/openmpi/share/vtk/proj/*
 
 %files -n python%{python3_pkgversion}-vtk-openmpi
 %{_libdir}/openmpi/lib/python%{python3_version}/
@@ -837,8 +784,6 @@ cat xorg.log
 %{_libdir}/openmpi/lib/lib*Qt*.so.*
 %exclude %{_libdir}/openmpi/lib/*Python*.so.*
 %{_libdir}/openmpi/lib/qt6/
-%{_libdir}/openmpi/lib/qml/
-%{_libdir}/qml/
 %endif
 
 %files data

@@ -1,4 +1,5 @@
 %global debug_package %{nil}
+%global _lto_cflags %{nil}
 Name:           genesis
 Version:        2.1.6.2
 Release:        0%{?dist}
@@ -17,6 +18,8 @@ BuildRequires:  libtool
 BuildRequires:  openmpi-devel
 BuildRequires:  fftw-devel
 BuildRequires:  zlib-devel
+BuildRequires:  lapack-devel
+BuildRequires:  blas-devel
 
 Requires:       openmpi
 Provides: libmpi.so.40()(64bit)
@@ -34,6 +37,15 @@ compatible with MDSPACE and includes the required Fortran configuration flags.
 
 %build
 autoreconf -fi
+export PATH=/usr/lib64/openmpi/bin:$PATH
+export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export CC=/usr/lib64/openmpi/bin/mpicc
+export CXX=/usr/lib64/openmpi/bin/mpic++
+export FC=/usr/lib64/openmpi/bin/mpifort
+export F77=/usr/lib64/openmpi/bin/mpifort
+export FFLAGS="%{optflags} -fallow-argument-mismatch"
+export FCFLAGS="%{optflags} -fallow-argument-mismatch"
+
 ./configure --prefix=/usr
 make
 

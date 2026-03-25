@@ -46,6 +46,7 @@ cmake .. \
   -DXMIPP_LINK_TO_SCIPION=NO \
   -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
+  -DBUILD_TESTING=OFF \
   -DXMIPP_USE_MPI=ON
 make -j$(nproc)
 popd

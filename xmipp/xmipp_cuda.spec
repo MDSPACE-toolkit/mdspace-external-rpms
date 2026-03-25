@@ -15,9 +15,9 @@ BuildRequires:  cmake
 BuildRequires:  perl
 BuildRequires:  fftw3-devel
 BuildRequires:  libtiff-devel
-BuildRequires: cuda-toolkit-11-7
-BuildRequires: cuda-cudart-devel-11-7
-BuildRequires: libcufft-devel-11-7
+BuildRequires: cuda-toolkit-13-2
+BuildRequires: cuda-cudart-devel-13-2
+BuildRequires: libcufft-devel-13-2
 
 Requires:       fftw3
 Requires:       libtiff
@@ -40,8 +40,8 @@ It includes a range of tools for working with cryo-EM images and maps.
 
 mkdir -p build
 pushd build
-%global cuda_root /usr/local/cuda-11.7
-export CUDA_HOME=/usr/local/cuda-11.7
+%global cuda_root /usr/local/cuda-13.2
+export CUDA_HOME=/usr/local/cuda-13.2
 export PATH=$CUDA_HOME/bin:$PATH
 export CPATH=$CUDA_HOME/include${CPATH:+:$CPATH}
 export LIBRARY_PATH=$CUDA_HOME/lib64${LIBRARY_PATH:+:$LIBRARY_PATH}
@@ -53,6 +53,7 @@ cmake .. \
   -DXMIPP_USE_MATLAB=OFF \
   -DXMIPP_USE_MPI=OFF \
   -DXMIPP_USE_CUDA=ON \
+  -DBUILD_TESTING=OFF \
   -DCMAKE_CUDA_ARCHITECTURES=86
 make -j$(nproc)
 popd
