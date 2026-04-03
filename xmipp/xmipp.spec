@@ -9,12 +9,22 @@ License:        GPL
 URL:            https://xmipp.cnb.csic.es/
 Source0:        https://github.com/I2PC/xmipp/archive/refs/tags/v%{version}-Rhea.tar.gz
 
-BuildRequires:  gcc-c++
-BuildRequires:  make
-BuildRequires:  cmake
-BuildRequires:  perl
-BuildRequires:  fftw3-devel
-BuildRequires:  libtiff-devel
+BuildRequires: gcc
+BuildRequires: gcc-c++
+BuildRequires: make
+BuildRequires: cmake
+BuildRequires: git
+BuildRequires: zlib-devel
+BuildRequires: fftw-devel
+BuildRequires: hdf5-devel
+BuildRequires: sqlite-devel
+BuildRequires: libtiff-devel
+BuildRequires: libjpeg-turbo-devel
+BuildRequires: java-11-openjdk-devel
+BuildRequires: python3
+BuildRequires: python3-devel
+BuildRequires: python3-numpy
+
 Provides: libsvm.so()(64bit)
 
 Requires:       fftw3
@@ -41,7 +51,10 @@ cmake .. \
   -DXMIPP_LINK_TO_SCIPION=NO \
   -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
-  -DXMIPP_USE_MPI=OFF
+  -DXMIPP_USE_MPI=OFF \
+  -DPython3_EXECUTABLE=%{_bindir}/python3 \
+  -DPython3_FIND_STRATEGY=LOCATION \
+  -DPython3_ROOT_DIR=%{_prefix}
 make -j$(nproc)
 popd
 

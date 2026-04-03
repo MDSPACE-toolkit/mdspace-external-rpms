@@ -9,12 +9,21 @@ License:        GPL
 URL:            https://xmipp.cnb.csic.es/
 Source0:        https://github.com/I2PC/xmipp/archive/refs/tags/v%{version}-Rhea.tar.gz
 
-BuildRequires:  gcc-c++
-BuildRequires:  make
-BuildRequires:  cmake
-BuildRequires:  perl
-BuildRequires:  fftw3-devel
-BuildRequires:  libtiff-devel
+BuildRequires: gcc
+BuildRequires: gcc-c++
+BuildRequires: make
+BuildRequires: cmake
+BuildRequires: git
+BuildRequires: zlib-devel
+BuildRequires: fftw-devel
+BuildRequires: hdf5-devel
+BuildRequires: sqlite-devel
+BuildRequires: libtiff-devel
+BuildRequires: libjpeg-turbo-devel
+BuildRequires: java-11-openjdk-devel
+BuildRequires: python3
+BuildRequires: python3-devel
+BuildRequires: python3-numpy
 BuildRequires: cuda-toolkit-11-7
 BuildRequires: cuda-cudart-devel-11-7
 BuildRequires: libcufft-devel-11-7
@@ -53,6 +62,9 @@ cmake .. \
   -DXMIPP_USE_MATLAB=OFF \
   -DXMIPP_USE_MPI=OFF \
   -DXMIPP_USE_CUDA=ON \
+  -DPython3_EXECUTABLE=%{_bindir}/python3 \
+  -DPython3_FIND_STRATEGY=LOCATION \
+  -DPython3_ROOT_DIR=%{_prefix}
   -DCMAKE_CUDA_ARCHITECTURES=86
 make -j$(nproc)
 popd

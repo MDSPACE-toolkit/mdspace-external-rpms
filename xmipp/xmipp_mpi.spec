@@ -12,12 +12,21 @@ Source0:        https://github.com/I2PC/xmipp/archive/refs/tags/v%{version}-Rhea
 %bcond_without  mpi
 %bcond_without  cuda
 
-BuildRequires:  gcc-c++
-BuildRequires:  make
-BuildRequires:  cmake
-BuildRequires:  perl
-BuildRequires:  fftw3-devel
-BuildRequires:  libtiff-devel
+BuildRequires: gcc
+BuildRequires: gcc-c++
+BuildRequires: make
+BuildRequires: cmake
+BuildRequires: git
+BuildRequires: zlib-devel
+BuildRequires: fftw-devel
+BuildRequires: hdf5-devel
+BuildRequires: sqlite-devel
+BuildRequires: libtiff-devel
+BuildRequires: libjpeg-turbo-devel
+BuildRequires: java-11-openjdk-devel
+BuildRequires: python3
+BuildRequires: python3-devel
+BuildRequires: python3-numpy
 BuildRequires:  mpi-devel
 
 Provides: libmpi.so.40()(64bit), libsvm.so()(64bit), libmpi_cxx.so.40()(64bit)
@@ -46,6 +55,9 @@ cmake .. \
   -DXMIPP_LINK_TO_SCIPION=NO \
   -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
+  -DPython3_EXECUTABLE=%{_bindir}/python3 \
+  -DPython3_FIND_STRATEGY=LOCATION \
+  -DPython3_ROOT_DIR=%{_prefix}
   -DXMIPP_USE_MPI=ON
 make -j$(nproc)
 popd
