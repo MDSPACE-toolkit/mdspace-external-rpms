@@ -1,0 +1,33 @@
+name: Build ARM64 RPMs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        spec:
+          - elnemo/elnemo.spec
+          - genesis/genesis.spec
+          - vtk/vtk.spec
+          - smog2/smog2.spec
+          - xmipp/xmipp.spec
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build RPM
+        run: |
+          chmod +x ./build.sh
+          mkdir -p output
+          ./build.sh "${{ matrix.spec }}" output
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ strategy.job-index }}-arm64-rpms
+          path: output/*.rpm

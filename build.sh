@@ -35,8 +35,6 @@ mkdir -p "$OUT_DIR_ABS"
 docker run --rm \
   -v "$PROJECT_ROOT:/work" \
   -v "$OUT_DIR_ABS:/out" \
-  -v "$SSH_AUTH_SOCK:/ssh-agent" \
-  -e SSH_AUTH_SOCK=/ssh-agent \
   -w /work \
   almalinux:9.5 \
   bash -lc '

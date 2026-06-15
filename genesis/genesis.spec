@@ -17,6 +17,8 @@ BuildRequires:  libtool
 BuildRequires:  openmpi-devel
 BuildRequires:  fftw-devel
 BuildRequires:  zlib-devel
+BuildRequires:  blas-devel
+BuildRequires:  lapack-devel
 
 Requires:       openmpi
 Provides: libmpi.so.40()(64bit)
@@ -33,11 +35,18 @@ compatible with MDSPACE and includes the required Fortran configuration flags.
 %autosetup -n mdspace-genesis-%{version}
 
 %build
+export PATH="%{_libdir}/openmpi/bin:$PATH"
+export LD_LIBRARY_PATH="%{_libdir}/openmpi/lib:${LD_LIBRARY_PATH:-}"
 autoreconf -fi
+FC=mpif90 \
+CC=mpicc \
+CXX=mpicxx \
 ./configure --prefix=/usr
 make
 
 %install
+export PATH="%{_libdir}/openmpi/bin:$PATH"
+export LD_LIBRARY_PATH="%{_libdir}/openmpi/lib:${LD_LIBRARY_PATH:-}"
 make install DESTDIR=%{buildroot}
 
 %files
