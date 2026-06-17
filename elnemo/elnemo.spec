@@ -27,6 +27,7 @@ for the package from the source code.
 
 %prep
 %autosetup -n nma-master
+sed -i 's/[[:space:]]-m64//g' ElNemo/Makefile
 
 %build
 cd ElNemo

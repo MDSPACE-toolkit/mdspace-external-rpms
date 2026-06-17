@@ -14,29 +14,28 @@ if [ ! -f "$SPEC_PATH" ]; then
   exit 1
 fi
 
+mkdir -p "$OUT_DIR"
+
 SPEC_PATH_ABS="$(realpath "$SPEC_PATH")"
 OUT_DIR_ABS="$(realpath "$OUT_DIR")"
 PROJECT_ROOT="$(realpath "$PWD")"
 
 case "$SPEC_PATH_ABS" in
-  "$PROJECT_ROOT"/*) ;;
+  "$PROJECT_ROOT"/*)
+    ;;
   *)
-    echo "ERROR: spec must be inside current working tree: $PROJECT_ROOT" >&2
+    echo "ERROR: spec must be inside the current working tree: $PROJECT_ROOT" >&2
     exit 1
     ;;
 esac
 
-SPEC_PATH_IN_CONTAINER="/work/${SPEC_PATH_ABS#$PROJECT_ROOT/}"
-SPEC_BASENAME="$(basename "$SPEC_PATH")"
+SPEC_PATH_IN_CONTAINER="/work/${SPEC_PATH_ABS#"$PROJECT_ROOT"/}"
+SPEC_BASENAME="$(basename "$SPEC_PATH_ABS")"
 SPEC_DIR_IN_CONTAINER="$(dirname "$SPEC_PATH_IN_CONTAINER")"
-
-mkdir -p "$OUT_DIR_ABS"
 
 docker run --rm \
   -v "$PROJECT_ROOT:/work" \
   -v "$OUT_DIR_ABS:/out" \
-  -v "$SSH_AUTH_SOCK:/ssh-agent" \
-  -e SSH_AUTH_SOCK=/ssh-agent \
   -w /work \
   almalinux:10.0 \
   bash -lc '
@@ -48,7 +47,7 @@ docker run --rm \
 
     rm -f /etc/yum.repos.d/*.repo
 
-    cat > /etc/yum.repos.d/alma95-vault.repo <<'"'"'EOF'"'"'
+    cat > /etc/yum.repos.d/alma10-vault.repo <<'"'"'EOF'"'"'
 [baseos]
 name=AlmaLinux 10.0 - BaseOS
 baseurl=https://vault.almalinux.org/10.0/BaseOS/$basearch/os/
@@ -73,7 +72,7 @@ EOF
     dnf makecache --releasever=10.0
 
     dnf -y --releasever=10.0 install \
-      https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+      https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
 
     dnf -y --releasever=10.0 install \
       dnf-plugins-core \
@@ -93,33 +92,31 @@ EOF
       gcc-c++ \
       patch
 
-    echo "=== Toolchain sanity ==="
-    objdump -p /usr/lib64/libgcc_s.so.1 | grep GLIBC | sort -V || true
-
-    MAX_GLIBC="$(
-      objdump -p /usr/lib64/libgcc_s.so.1 \
-        | grep -o "GLIBC_[0-9]\+\.[0-9]\+" \
-        | sort -V \
-        | tail -1
-    )"
-
-    echo "Detected max GLIBC symbol: ${MAX_GLIBC:-none}"
-
-    if [ -n "${MAX_GLIBC:-}" ] && \
-       [ "$(printf "%s\n" "$MAX_GLIBC" "GLIBC_2.35" | sort -V | tail -1)" != "GLIBC_2.35" ]; then
-      echo "ERROR: libgcc_s.so.1 requires newer than GLIBC_2.35: $MAX_GLIBC" >&2
-      exit 1
-    fi
-
     rpmdev-setuptree
-    cp "$SPEC_IN_CONTAINER" /root/rpmbuild/SPECS/"$SPEC_BASENAME"
 
-    find "$SPEC_DIR_IN_CONTAINER" -maxdepth 1 -type f ! -name "*.spec" -exec cp -v {} /root/rpmbuild/SOURCES/ \; || true
+    cp \
+      "$SPEC_IN_CONTAINER" \
+      "/root/rpmbuild/SPECS/$SPEC_BASENAME"
+
+    find "$SPEC_DIR_IN_CONTAINER" \
+      -maxdepth 1 \
+      -type f \
+      ! -name "*.spec" \
+      -exec cp -v {} /root/rpmbuild/SOURCES/ \; \
+      || true
 
     SPEC_FILE="/root/rpmbuild/SPECS/$SPEC_BASENAME"
 
-    spectool -g -R --define "_sourcedir /root/rpmbuild/SOURCES" "$SPEC_FILE"
-    dnf -y --releasever=10.0 builddep "$SPEC_FILE"
+    spectool \
+      -g \
+      -R \
+      --define "_sourcedir /root/rpmbuild/SOURCES" \
+      "$SPEC_FILE"
+
+    dnf -y \
+      --releasever=10.0 \
+      builddep \
+      "$SPEC_FILE"
 
     rpmbuild -ba \
       --define "_topdir /root/rpmbuild" \
@@ -130,24 +127,6 @@ EOF
       --define "_rpmdir /root/rpmbuild/RPMS" \
       "$SPEC_FILE"
 
-
-    echo "=== Toolchain sanity ==="
-    objdump -p /usr/lib64/libgcc_s.so.1 | grep GLIBC | sort -V || true
-
-    MAX_GLIBC="$(
-      objdump -p /usr/lib64/libgcc_s.so.1 \
-        | grep -o "GLIBC_[0-9]\+\.[0-9]\+" \
-        | sort -V \
-        | tail -1
-    )"
-
-    echo "Detected max GLIBC symbol: ${MAX_GLIBC:-none}"
-
-    if [ -n "${MAX_GLIBC:-}" ] && \
-       [ "$(printf "%s\n" "$MAX_GLIBC" "GLIBC_2.35" | sort -V | tail -1)" != "GLIBC_2.35" ]; then
-      echo "ERROR: libgcc_s.so.1 requires newer than GLIBC_2.35: $MAX_GLIBC" >&2
-      exit 1
-    fi
     cp -v /root/rpmbuild/RPMS/*/*.rpm /out/
     cp -v /root/rpmbuild/SRPMS/*.src.rpm /out/
   '

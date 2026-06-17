@@ -36,20 +36,20 @@ compatible with MDSPACE and includes the required Fortran configuration flags.
 %autosetup -n mdspace-genesis-%{version}
 
 %build
+export PATH="%{_libdir}/openmpi/bin:$PATH"
+export LD_LIBRARY_PATH="%{_libdir}/openmpi/lib:${LD_LIBRARY_PATH:-}"
 autoreconf -fi
-export PATH=/usr/lib64/openmpi/bin:$PATH
-export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-export CC=/usr/lib64/openmpi/bin/mpicc
-export CXX=/usr/lib64/openmpi/bin/mpic++
-export FC=/usr/lib64/openmpi/bin/mpifort
-export F77=/usr/lib64/openmpi/bin/mpifort
-export FFLAGS="%{optflags} -fallow-argument-mismatch"
-export FCFLAGS="%{optflags} -fallow-argument-mismatch"
-
+FC=mpif90 \
+CC=mpicc \
+CXX=mpicxx \
+export FFLAGS="%{build_fflags} -fallow-argument-mismatch"
+export FCFLAGS="%{build_fflags} -fallow-argument-mismatch"
 ./configure --prefix=/usr
 make
 
 %install
+export PATH="%{_libdir}/openmpi/bin:$PATH"
+export LD_LIBRARY_PATH="%{_libdir}/openmpi/lib:${LD_LIBRARY_PATH:-}"
 make install DESTDIR=%{buildroot}
 
 %files

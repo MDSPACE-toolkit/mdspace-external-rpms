@@ -8,14 +8,24 @@ Summary:        XMIPP - Image Processing Software for CryoEM
 License:        GPL
 URL:            https://xmipp.cnb.csic.es/
 Source0:        https://github.com/I2PC/xmipp/archive/refs/tags/v%{version}-Rhea.tar.gz
+Patch0:         xmipp-aarch64-cpuid.patch
+Patch1:         xmipp-gcc14-algorithm.patch
 
+BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  make
 BuildRequires:  cmake
-BuildRequires:  perl
-BuildRequires:  fftw3-devel
+BuildRequires:  git
+BuildRequires:  zlib-devel
+BuildRequires:  fftw-devel
+BuildRequires:  hdf5-devel
+BuildRequires:  sqlite-devel
 BuildRequires:  libtiff-devel
-Provides: libsvm.so()(64bit)
+BuildRequires:  libjpeg-turbo-devel
+BuildRequires:  java-25-openjdk-devel
+BuildRequires:  python3
+BuildRequires:  python3-devel
+BuildRequires:  python3-numpy
 
 Requires:       fftw3
 Requires:       libtiff
@@ -28,7 +38,7 @@ XMIPP is a software suite designed for image processing in cryo-electron microsc
 It includes a range of tools for working with cryo-EM images and maps.
 
 %prep
-%autosetup -n xmipp3-%{version}-Rhea
+%autosetup -n xmipp3-%{version}-Rhea -p1
 
 %build
 ./xmipp getSources
@@ -42,7 +52,9 @@ cmake .. \
   -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
   -DXMIPP_USE_MPI=OFF \
-  -DBUILD_TESTING=OFF
+  -DPython3_EXECUTABLE=%{_bindir}/python3 \
+  -DPython3_FIND_STRATEGY=LOCATION \
+  -DPython3_ROOT_DIR=%{_prefix}
 make -j$(nproc)
 popd
 

@@ -1,0 +1,199 @@
+name: Build EL10 RPMs
+
+on:
+  push:
+    branches:
+      - el10
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.component }} for ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # x86_64
+          - component: elnemo
+            spec: elnemo/elnemo.spec
+            arch: x86_64
+            runner: ubuntu-24.04
+
+          - component: genesis
+            spec: genesis/genesis.spec
+            arch: x86_64
+            runner: ubuntu-24.04
+
+          - component: vtk
+            spec: vtk/vtk.spec
+            arch: x86_64
+            runner: ubuntu-24.04
+
+          - component: smog2
+            spec: smog2/smog2.spec
+            arch: x86_64
+            runner: ubuntu-24.04
+
+          - component: xmipp
+            spec: xmipp/xmipp.spec
+            arch: x86_64
+            runner: ubuntu-24.04
+
+          # aarch64
+          - component: elnemo
+            spec: elnemo/elnemo.spec
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+
+          - component: genesis
+            spec: genesis/genesis.spec
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+
+          - component: vtk
+            spec: vtk/vtk.spec
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+
+          - component: smog2
+            spec: smog2/smog2.spec
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+
+          - component: xmipp
+            spec: xmipp/xmipp.spec
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify runner architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Expected: ${{ matrix.arch }}"
+          echo "Runner:   $(uname -m)"
+
+          test "$(uname -m)" = "${{ matrix.arch }}"
+
+      - name: Build EL10 RPM
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          chmod +x ./build.sh
+          mkdir -p output
+
+          ./build.sh "${{ matrix.spec }}" output
+
+      - name: Collect RPMs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist
+
+          # Copy architecture-specific binary RPMs.
+          find output \
+            -maxdepth 1 \
+            -type f \
+            -name "*.rpm" \
+            ! -name "*.src.rpm" \
+            -exec cp -v {} dist/ \;
+
+          # Source RPMs are architecture-independent.
+          # Keep only the x86_64 copy to avoid duplicate filenames.
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            find output \
+              -maxdepth 1 \
+              -type f \
+              -name "*.src.rpm" \
+              -exec cp -v {} dist/ \;
+          fi
+
+          if ! compgen -G "dist/*.rpm" > /dev/null; then
+            echo "ERROR: no RPM was produced" >&2
+            exit 1
+          fi
+
+          echo "Produced files:"
+          ls -lh dist
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.component }}-${{ matrix.arch }}-el10-rpms
+          path: dist/*.rpm
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    name: Publish EL10 continuous assets
+    needs: build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all EL10 RPMs
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+
+      - name: Prepare EL10 release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! compgen -G "release/*el10*.rpm" > /dev/null; then
+            echo "ERROR: no EL10 RPMs were downloaded" >&2
+            exit 1
+          fi
+
+          echo "EL10 release contents:"
+          ls -lh release/*el10*.rpm
+
+          (
+            cd release
+            sha256sum ./*el10*.rpm > SHA256SUMS-el10
+          )
+
+          cat release/SHA256SUMS-el10
+
+      - name: Move continuous tag to this commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git tag -f continuous "$GITHUB_SHA"
+          git push origin refs/tags/continuous --force
+
+      - name: Upload EL10 continuous release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: continuous
+          tag_name: continuous
+          files: |
+            release/*el10*.rpm
+            release/SHA256SUMS-el10
+          fail_on_unmatched_files: true
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
