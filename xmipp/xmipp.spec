@@ -2,7 +2,7 @@
 
 Name:           xmipp
 Version:        3.25.06.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        XMIPP - Image Processing Software for CryoEM
 
 License:        GPL
@@ -49,10 +49,21 @@ It includes a range of tools for working with cryo-EM images and maps.
 %build
 ./xmipp getSources
 
+# invalid string access triggers an assertion with new compiler
+export CFLAGS="%{build_cflags}"
+export CXXFLAGS="%{build_cxxflags}"
+CXXFLAGS="${CXXFLAGS//-Wp,-D_GLIBCXX_ASSERTIONS/}"
+CXXFLAGS="${CXXFLAGS//-D_GLIBCXX_ASSERTIONS/}"
+CXXFLAGS="$CXXFLAGS -U_GLIBCXX_ASSERTIONS"
+
+export CFLAGS CXXFLAGS
+
 mkdir -p build
 pushd build
 cmake .. \
   -DCMAKE_INSTALL_PREFIX=%{_prefix} \
+  -DCMAKE_C_FLAGS:STRING="$CFLAGS" \ -DCMAKE_CXX_FLAGS:STRING="$CXXFLAGS" \
+  -DCMAKE_CXX_FLAGS_RELEASE:STRING="-O2 -DNDEBUG -U_GLIBCXX_ASSERTIONS" \
   -DCMAKE_BUILD_TYPE=Release \
   -DXMIPP_LINK_TO_SCIPION=NO \
   -DXMIPP_USE_CUDA=OFF \
