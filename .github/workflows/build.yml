@@ -95,6 +95,33 @@ jobs:
 
           ./build.sh "${{ matrix.spec }}" output
 
+      - name: Validate RPM
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Built RPMs:"
+          ls -lh output/*.rpm
+
+          docker run --rm \
+            -v "$PWD/output:/rpms:ro" \
+            almalinux:10 \
+            bash -lc '
+              set -euo pipefail
+
+              dnf -y install dnf-plugins-core
+              dnf -y install epel-release || true
+              dnf config-manager --set-enabled crb || true
+              dnf -y makecache
+
+              echo "Testing RPM dependency closure..."
+              rpms=$(find /rpms -maxdepth 1 -type f -name "*.rpm" ! -name "*.src.rpm")
+              dnf -y install $rpms
+
+              echo "Installed RPMs:"
+              rpm -qa | grep -E "^(smog2|xmipp|elnemo|genesis|vtk)" || true
+            '
+
       - name: Collect RPMs
         shell: bash
         run: |

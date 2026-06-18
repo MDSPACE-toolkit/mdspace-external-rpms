@@ -23,6 +23,8 @@ Requires:       epel-release
 Requires:       perl
 Requires:       perl(XML::Parser)
 Requires:       perl(XML::SAX)
+Requires:       perl(PDL)
+
 Requires:       java-21-openjdk
 
 %description
