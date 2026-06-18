@@ -38,7 +38,13 @@ XMIPP is a software suite designed for image processing in cryo-electron microsc
 It includes a range of tools for working with cryo-EM images and maps.
 
 %prep
-%autosetup -n xmipp3-%{version}-Rhea -p1
+%setup -q -n xmipp3-%{version}-Rhea
+
+%ifarch aarch64
+%patch -P 0 -p1
+%endif
+
+%patch 1 -p1
 
 %build
 ./xmipp getSources
@@ -52,6 +58,7 @@ cmake .. \
   -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
   -DXMIPP_USE_MPI=OFF \
+  -DBUILD_TESTING=OFF \
   -DPython3_EXECUTABLE=%{_bindir}/python3 \
   -DPython3_FIND_STRATEGY=LOCATION \
   -DPython3_ROOT_DIR=%{_prefix}
