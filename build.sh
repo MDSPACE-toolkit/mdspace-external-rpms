@@ -37,44 +37,17 @@ docker run --rm \
   -v "$PROJECT_ROOT:/work" \
   -v "$OUT_DIR_ABS:/out" \
   -w /work \
-  almalinux:10.0 \
+  -e SPEC_IN_CONTAINER="$SPEC_PATH_IN_CONTAINER" \
+  -e SPEC_BASENAME="$SPEC_BASENAME" \
+  -e SPEC_DIR_IN_CONTAINER="$SPEC_DIR_IN_CONTAINER" \
+  almalinux:10 \
   bash -lc '
     set -euo pipefail
 
-    SPEC_IN_CONTAINER="'"$SPEC_PATH_IN_CONTAINER"'"
-    SPEC_BASENAME="'"$SPEC_BASENAME"'"
-    SPEC_DIR_IN_CONTAINER="'"$SPEC_DIR_IN_CONTAINER"'"
+    dnf -y install epel-release
+    dnf config-manager --set-enabled crb
 
-    rm -f /etc/yum.repos.d/*.repo
-
-    cat > /etc/yum.repos.d/alma10-vault.repo <<'"'"'EOF'"'"'
-[baseos]
-name=AlmaLinux 10.0 - BaseOS
-baseurl=https://vault.almalinux.org/10.0/BaseOS/$basearch/os/
-enabled=1
-gpgcheck=0
-
-[appstream]
-name=AlmaLinux 10.0 - AppStream
-baseurl=https://vault.almalinux.org/10.0/AppStream/$basearch/os/
-enabled=1
-gpgcheck=0
-
-[crb]
-name=AlmaLinux 10.0 - CRB
-baseurl=https://vault.almalinux.org/10.0/CRB/$basearch/os/
-enabled=1
-gpgcheck=0
-EOF
-
-    dnf clean all
-    rm -rf /var/cache/dnf
-    dnf makecache --releasever=10.0
-
-    dnf -y --releasever=10.0 install \
-      https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
-
-    dnf -y --releasever=10.0 install \
+    dnf -y install \
       dnf-plugins-core \
       rpm-build \
       rpmdevtools \
@@ -114,7 +87,6 @@ EOF
       "$SPEC_FILE"
 
     dnf -y \
-      --releasever=10.0 \
       builddep \
       "$SPEC_FILE"
 
