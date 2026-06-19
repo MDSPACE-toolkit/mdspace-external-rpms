@@ -28,6 +28,7 @@ BuildRequires:  perl(Test::Warnings)
 
 Requires:       epel-release
 Requires:       perl
+Requires:       which
 Requires:       perl(XML::Parser)
 Requires:       perl(XML::SAX)
 Requires:       perl(PDL)
