@@ -7,6 +7,7 @@ Summary:        RTB2 - Rotation-Translation Block normal mode analysis tools
 
 License:        Proprietary
 URL:            https://github.com/MDSPACE-toolkit/rtb2
+Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -23,15 +24,10 @@ RTB2 provides tools for rotation-translation block normal mode analysis.
 This package installs the RTB2 binaries and the makebloc.pl helper script.
 
 %prep
-mkdir -p "$HOME/.ssh"
-chmod 700 "$HOME/.ssh"
-ssh-keyscan -H github.com > "$HOME/.ssh/known_hosts"
-chmod 600 "$HOME/.ssh/known_hosts"
-GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/root/.ssh/known_hosts" \
-git clone git@github.com:MDSPACE-toolkit/rtb2.git rtb2-1.0.0
+%autosetup -n %{name}-%{version}
 
 %build
-cd rtb2-1.0.0/src
+cd src
 mkdir -p build
 cd build
 cmake .. \
@@ -43,8 +39,8 @@ make
 %install
 mkdir -p %{buildroot}%{_bindir}
 
-install -m 0755 rtb2-1.0.0/src/build/rtb2 %{buildroot}%{_bindir}/rtb2
-install -m 0755 rtb2-1.0.0/scripts/makebloc.pl %{buildroot}%{_bindir}/makebloc.pl
+install -m 0755 src/build/rtb2 %{buildroot}%{_bindir}/rtb2
+install -m 0755 scripts/makebloc.pl %{buildroot}%{_bindir}/makebloc.pl
 
 %files
 %{_bindir}/rtb2
