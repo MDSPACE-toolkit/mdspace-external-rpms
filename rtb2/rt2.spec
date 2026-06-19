@@ -19,6 +19,10 @@ BuildRequires:  blas-devel
 BuildRequires:  arpack-devel
 BuildRequires:  flexiblas-devel
 
+Requires:       perl
+Requires:       flexiblas
+Requires:       flexiblas-netlib
+
 %description
 RTB2 provides tools for rotation-translation block normal mode analysis.
 This package installs the RTB2 binaries and the makebloc.pl helper script.
