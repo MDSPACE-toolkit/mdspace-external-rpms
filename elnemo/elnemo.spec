@@ -29,8 +29,18 @@ for the package from the source code.
 %autosetup -n nma-master
 sed -i 's/[[:space:]]-m64//g' ElNemo/Makefile
 
+%ifarch x86_64
+%global safe_arch_flags -march=x86-64 -mtune=generic
+%else
+%global safe_arch_flags %{nil}
+%endif
+
 %build
 cd ElNemo
+export CFLAGS="%{optflags} %{safe_arch_flags}"
+export CXXFLAGS="%{optflags} %{safe_arch_flags}"
+export FFLAGS="%{optflags} %{safe_arch_flags}"
+export FCFLAGS="%{optflags} %{safe_arch_flags}"
 make
 
 %install

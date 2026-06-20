@@ -30,10 +30,20 @@ This package installs the RTB2 binaries and the makebloc.pl helper script.
 %prep
 %autosetup -n %{name}-%{version}
 
+%ifarch x86_64
+%global safe_arch_flags -march=x86-64 -mtune=generic
+%else
+%global safe_arch_flags %{nil}
+%endif
+
 %build
 cd src
 mkdir -p build
 cd build
+export CFLAGS="%{optflags} %{safe_arch_flags}"
+export CXXFLAGS="%{optflags} %{safe_arch_flags}"
+export FFLAGS="%{optflags} %{safe_arch_flags}"
+export FCFLAGS="%{optflags} %{safe_arch_flags}"
 cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=%{_prefix}

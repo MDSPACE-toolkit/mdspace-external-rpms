@@ -34,9 +34,21 @@ compatible with MDSPACE and includes the required Fortran configuration flags.
 %prep
 %autosetup -n mdspace-genesis-%{version}
 
+%ifarch x86_64
+%global safe_arch_flags -march=x86-64 -mtune=generic
+%else
+%global safe_arch_flags %{nil}
+%endif
+
 %build
 export PATH="%{_libdir}/openmpi/bin:$PATH"
 export LD_LIBRARY_PATH="%{_libdir}/openmpi/lib:${LD_LIBRARY_PATH:-}"
+
+export CFLAGS="%{optflags} %{safe_arch_flags}"
+export CXXFLAGS="%{optflags} %{safe_arch_flags}"
+export FFLAGS="%{optflags} %{safe_arch_flags} -fallow-argument-mismatch -ffree-line-length-none"
+export FCFLAGS="%{optflags} %{safe_arch_flags} -fallow-argument-mismatch -ffree-line-length-none"
+
 autoreconf -fi
 FC=mpif90 \
 CC=mpicc \
