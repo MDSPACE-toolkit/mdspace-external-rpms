@@ -40,6 +40,10 @@ This package installs the RTB2 binaries and the makebloc.pl helper script.
 cd src
 mkdir -p build
 cd build
+export CC=gcc
+export CXX=g++
+export FC=gfortran
+export F77=gfortran
 export CFLAGS="%{optflags} %{safe_arch_flags}"
 export CXXFLAGS="%{optflags} %{safe_arch_flags}"
 export FFLAGS="%{optflags} %{safe_arch_flags}"

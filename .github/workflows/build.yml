@@ -85,6 +85,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout private RTB2 source
+        if: matrix.component == 'rtb2'
+        uses: actions/checkout@v4
+        with:
+          repository: MDSPACE-toolkit/rtb2
+          path: private-rtb2
+          ssh-key: ${{ secrets.RTB2_DEPLOY_KEY }}
+
+      - name: Prepare RTB2 source tarball
+        if: matrix.component == 'rtb2'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -f rtb2/rtb2-1.0.0.tar.gz
+
+          tar \
+            --exclude='.git' \
+            --transform 's,^,rtb2-1.0.0/,' \
+            -czf rtb2/rtb2-1.0.0.tar.gz \
+            -C private-rtb2 .
+
+          echo "Prepared RTB2 source tarball:"
+          ls -lh rtb2/rtb2-1.0.0.tar.gz
+
       - name: Verify runner architecture
         shell: bash
         run: |
