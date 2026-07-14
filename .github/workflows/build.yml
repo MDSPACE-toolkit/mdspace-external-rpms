@@ -55,6 +55,11 @@ jobs:
             arch: x86_64
             runner: ubuntu-24.04
 
+          - component: pdb_fixer
+            spec: pdb_fixer/pdb_fixer.spec
+            arch: x86_64
+            runner: ubuntu-24.04
+
           # aarch64
           - component: elnemo
             spec: elnemo/elnemo.spec
@@ -88,6 +93,11 @@ jobs:
 
           - component: cs
             spec: cs/cs.spec
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+
+          - component: pdb_fixer
+            spec: pdb_fixer/pdb_fixer.spec
             arch: aarch64
             runner: ubuntu-24.04-arm
 
