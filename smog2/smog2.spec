@@ -7,9 +7,9 @@ Summary:        SMOG2 - A tool for molecular simulation
 
 License:        GPLv2
 URL:            https://smog-server.org/smog2/
-Source0:        https://smog-server.org/smog2/code/smog-%{version}.tgz
+Source0:        https://github.com/smog-server/SMOG2/archive/refs/tags/v%{version}.tar.gz
 Source1:        https://www.cpan.org/modules/by-module/XML/XML-Validator-Schema-1.10.tar.gz
-Source2:        https://www.cpan.org/authors/id/R/RS/RSAVAGE/Tree-DAG_Node-1.35.tgz
+Source2:        https://www.cpan.org/authors/id/R/RS/RSAVAGE/Tree-DAG_Node-1.39.tgz
 
 BuildRequires:  gcc
 BuildRequires:  gcc-gfortran
@@ -31,11 +31,11 @@ simulation and analysis. This package integrates the SMOG2 toolkit into
 the MDSPACE environment.
 
 %prep
-%autosetup -n smog-%{version}
+%autosetup -n SMOG2-%{version}
 
 
 tar xf %{SOURCE2}
-pushd Tree-DAG_Node-1.35
+pushd Tree-DAG_Node-1.39
 perl Makefile.PL INSTALLDIRS=vendor
 make
 popd
@@ -103,7 +103,7 @@ cp -r src/tools/* %{buildroot}/usr/share/smog2/src/tools/
 mkdir -p %{buildroot}/usr/share/smog2/share
 cp -r share/* %{buildroot}/usr/share/smog2/share/
 
-pushd Tree-DAG_Node-1.35
+pushd Tree-DAG_Node-1.39
 make DESTDIR=%{buildroot} install
 popd
 
