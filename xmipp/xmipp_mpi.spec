@@ -58,6 +58,15 @@ pushd build
 make install DESTDIR=%{buildroot}
 popd
 
+# XMIPP installs its Python modules outside Python's normal search path.  A
+# .pth file makes command-line scripts such as xmipp_showj work without
+# requiring users to source /usr/xmipp.bashrc first.
+install -d "%{buildroot}%{python3_sitelib}"
+printf '%s\n' \
+  "%{_prefix}/bindings/python" \
+  "%{_prefix}/pylib" \
+  > "%{buildroot}%{python3_sitelib}/xmipp.pth"
+
 if [ -d "%{buildroot}%{_bindir}" ]; then
   find %{buildroot}%{_bindir} -type f -exec sed -i '1s|^#!.*python$|#!/usr/bin/env python3|' {} \; || true
   find %{buildroot}%{_bindir} -type f -name "*.py" -exec chmod +x {} \; || true
@@ -77,6 +86,7 @@ rm -rf %{buildroot}/usr/include/gmock
 /usr/resources/*
 /usr/pylib/*
 /usr/xmipp.bashrc
+%{python3_sitelib}/xmipp.pth
 %{_includedir}/*
 %{_datadir}/*
 
