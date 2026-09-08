@@ -2,15 +2,14 @@
 
 Name:           xmipp-mpi
 Version:        3.25.06.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        XMIPP - Image Processing Software for CryoEM
 
 License:        GPL
 URL:            https://xmipp.cnb.csic.es/
 Source0:        https://github.com/I2PC/xmipp/archive/refs/tags/v%{version}-Rhea.tar.gz
+Patch0:         xmipp-aarch64-cpuid.patch
 
-%bcond_without  mpi
-%bcond_without  cuda
 
 BuildRequires: gcc
 BuildRequires: gcc-c++
@@ -42,7 +41,11 @@ XMIPP is a software suite designed for image processing in cryo-electron microsc
 It includes a range of tools for working with cryo-EM images and maps.
 
 %prep
-%autosetup -n xmipp3-%{version}-Rhea
+%setup -q -n xmipp3-%{version}-Rhea
+
+%ifarch aarch64
+%patch -P 0 -p1
+%endif
 
 %build
 ./xmipp getSources
@@ -55,19 +58,29 @@ cmake .. \
   -DXMIPP_LINK_TO_SCIPION=NO \
   -DXMIPP_USE_CUDA=OFF \
   -DXMIPP_USE_MATLAB=OFF \
+  -DXMIPP_USE_MPI=ON \
+  -DBUILD_TESTING=OFF \
   -DPython3_EXECUTABLE=%{_bindir}/python3 \
   -DPython3_FIND_STRATEGY=LOCATION \
   -DPython3_ROOT_DIR=%{_prefix}
-  -DXMIPP_USE_MPI=ON
-make -j$(nproc)
+%make_build
 popd
 
 %install
 rm -rf %{buildroot}
 
 pushd build
-make install DESTDIR=%{buildroot}
+%make_install
 popd
+
+# XMIPP installs its Python modules outside Python's normal search path.  A
+# .pth file makes command-line scripts such as xmipp_showj work without
+# requiring users to source /usr/xmipp.bashrc first.
+install -d "%{buildroot}%{python3_sitelib}"
+printf '%s\n' \
+  "%{_prefix}/bindings/python" \
+  "%{_prefix}/pylib" \
+  > "%{buildroot}%{python3_sitelib}/xmipp.pth"
 
 if [ -d "%{buildroot}%{_bindir}" ]; then
   find %{buildroot}%{_bindir} -type f -exec sed -i '1s|^#!.*python$|#!/usr/bin/env python3|' {} \; || true
@@ -78,21 +91,27 @@ if [ -d "%{buildroot}%{_libexecdir}/xmipp" ]; then
   find %{buildroot}%{_libexecdir}/xmipp -type f -name "*.py" -exec chmod +x {} \; || true
 fi
 
-rm -rf %{buildroot}/usr/include/gtest
-rm -rf %{buildroot}/usr/include/gmock
+rm -rf "%{buildroot}%{_includedir}/gtest"
+rm -rf "%{buildroot}%{_includedir}/gmock"
 
 %files
 %{_bindir}/*
-/usr/lib/*
-/usr/bindings/*
-/usr/resources/*
-/usr/pylib/*
-/usr/xmipp.bashrc
+%{_prefix}/lib/*
+%{_prefix}/bindings/*
+%{_prefix}/resources/*
+%{_prefix}/pylib/*
+%{_prefix}/xmipp.bashrc
+%{python3_sitelib}/xmipp.pth
 %{_includedir}/*
 %{_datadir}/*
 
 %changelog
-* Thu Feb 17 2026 Benjamin Gallois <benjamin.gallois@sorbonne-universite.fr>
-- Make PMI, CUDA subpackages
-* Sat Nov 01 2025 Benjamin Gallois <benjamin.gallois@sorbonne-universite.fr>
-- Initial package for XMIPP
+* Mon Jun 15 2026 Benjamin Gallois <benjamin.gallois@sorbonne-universite.fr> - 3.25.06.0-4
+- Add an architecture guard around the x86 CPUID implementation.
+- Allow XMIPP to compile on AArch64 systems.
+
+* Tue Feb 17 2026 Benjamin Gallois <benjamin.gallois@sorbonne-universite.fr> - 3.25.06.0-3
+- Add MPI and CUDA subpackages.
+
+* Sat Nov 01 2025 Benjamin Gallois <benjamin.gallois@sorbonne-universite.fr> - 3.25.06.0-1
+- Initial XMIPP package.
