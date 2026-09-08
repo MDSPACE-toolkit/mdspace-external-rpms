@@ -8,9 +8,9 @@ Summary:        SMOG2 - A tool for molecular simulation
 
 License:        GPLv2
 URL:            https://smog-server.org/smog2/
-Source0:        https://smog-server.org/smog2/code/smog-%{version}.tgz
+Source0:        https://github.com/smog-server/SMOG2/archive/refs/tags/v%{version}.tar.gz
 Source1:        https://www.cpan.org/modules/by-module/XML/XML-Validator-Schema-1.10.tar.gz
-Source2:        https://www.cpan.org/authors/id/R/RS/RSAVAGE/Tree-DAG_Node-1.35.tgz
+Source2:        https://www.cpan.org/authors/id/R/RS/RSAVAGE/Tree-DAG_Node-1.39.tgz
 Source3:        https://cpan.metacpan.org/authors/id/L/LE/LEONT/File-Map-0.71.tar.gz
 Source4:        https://cpan.metacpan.org/authors/id/E/ET/ETJ/PDL-2.103.tar.gz
 
@@ -38,7 +38,7 @@ Requires:       java-21-openjdk
 Provides:       perl(PDL)
 Provides:       bundled(perl-PDL) = 2.103
 Provides:       bundled(perl-File-Map) = 0.71
-Provides:       bundled(perl-Tree-DAG_Node) = 1.35
+Provides:       bundled(perl-Tree-DAG_Node) = 1.39
 Provides:       bundled(perl-XML-Validator-Schema) = 1.10
 
 %description
@@ -47,11 +47,11 @@ simulation and analysis. This package integrates the SMOG2 toolkit into
 the MDSPACE environment.
 
 %prep
-%autosetup -n smog-%{version}
+%autosetup -n SMOG2-%{version}
 
 
 tar xf %{SOURCE2}
-pushd Tree-DAG_Node-1.35
+pushd Tree-DAG_Node-1.39
 perl Makefile.PL INSTALLDIRS=vendor
 make
 popd
@@ -135,7 +135,7 @@ cp -r src/tools/* %{buildroot}/usr/share/smog2/src/tools/
 mkdir -p %{buildroot}/usr/share/smog2/share
 cp -r share/* %{buildroot}/usr/share/smog2/share/
 
-pushd Tree-DAG_Node-1.35
+pushd Tree-DAG_Node-1.39
 make DESTDIR=%{buildroot} install
 popd
 
