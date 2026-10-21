@@ -6,8 +6,8 @@ Release:        5%{?dist}
 Summary:        SMOG2 - A tool for molecular simulation
 
 License:        GPLv2
-URL:            https://smog-server.org/smog2/
-Source0:        https://github.com/smog-server/SMOG2/archive/refs/tags/v%{version}.tar.gz
+URL:            https://github.com/smog-server/SMOG2/tree/v2.5
+Source0:        https://github.com/smog-server/SMOG2/archive/v%{version}.tar.gz
 Source1:        https://www.cpan.org/modules/by-module/XML/XML-Validator-Schema-1.10.tar.gz
 Source2:        https://www.cpan.org/authors/id/R/RS/RSAVAGE/Tree-DAG_Node-1.39.tgz
 
