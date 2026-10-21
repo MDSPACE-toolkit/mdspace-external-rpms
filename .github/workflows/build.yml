@@ -30,6 +30,11 @@ jobs:
             arch: x86_64
             runner: ubuntu-24.04
 
+          - component: genesis-nompi
+            spec: genesis-nompi/genesis-nompi.spec
+            arch: x86_64
+            runner: ubuntu-24.04
+
           - component: vtk
             spec: vtk/vtk.spec
             arch: x86_64
@@ -68,6 +73,11 @@ jobs:
 
           - component: genesis
             spec: genesis/genesis.spec
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+
+          - component: genesis-nompi
+            spec: genesis-nompi/genesis-nompi.spec
             arch: aarch64
             runner: ubuntu-24.04-arm
 

@@ -26,6 +26,7 @@ Provides: libmpi.so.40()(64bit)
 Provides: libmpi_mpifh.so.40()(64bit)
 Provides: libmpi_usempi_ignore_tkr.so.40()(64bit)
 Provides: libmpi_usempif08.so.40()(64bit)
+Conflicts:      genesis-nompi
 
 %description
 GENESIS (Generalized-Ensemble Simulation System) is a high-performance molecular
